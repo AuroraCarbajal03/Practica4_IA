@@ -1,0 +1,45 @@
+name: CI — Clasificación Académica IA
+
+# Ejecutar en cada push y pull request a cualquier rama
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  test-and-run:
+    name: Tests unitarios + Pipeline principal
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Clonar el repositorio
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      # 2. Configurar Python 3.11 (LTS, compatible con todas las dependencias)
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"           # cachea ~/.cache/pip entre runs para acelerar CI
+
+      # 3. Instalar dependencias desde requirements.txt
+      - name: Instalar dependencias
+        run: pip install --upgrade pip && pip install -r requirements.txt
+
+      # 4. Ejecutar suite de pruebas unitarias con pytest
+      #    -v          → salida detallada por test
+      #    --tb=short  → traceback compacto en caso de fallo
+      - name: Ejecutar pruebas unitarias
+        run: pytest test_classifiers.py -v --tb=short
+        env:
+          MPLBACKEND: Agg    # backend sin pantalla para entornos headless
+
+      # 5. Ejecutar el pipeline principal (carga dataset, evalúa, imprime tabla)
+      #    timeout-minutes: 10 protege contra bloqueos de red (descarga UCI)
+      - name: Ejecutar pipeline principal (main.py)
+        run: python main.py
+        timeout-minutes: 10
+        env:
+          MPLBACKEND: Agg

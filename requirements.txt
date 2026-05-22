@@ -1,2 +1,5 @@
-customtkinter
-psutil
+numpy>=1.26,<3
+pandas>=2.0,<4
+matplotlib>=3.7,<4
+seaborn>=0.12,<1
+pytest>=7.4,<9
